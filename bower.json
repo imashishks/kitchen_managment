@@ -12,6 +12,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "angularjs#^1.6.9"
+    "angular": "angularjs#^1.6.9",
+    "angular-route": "^1.6.9"
   }
 }
