@@ -1,6 +1,8 @@
+
+
 const express = require('express');
 const {
-  getOrder, getDishCreationCount, postOrder, patchOrder,
+  getOrder, getDishCreationCount, postOrder, patchOrder, getOrderstoDisplay,
 } = require('../handler/order.handler');
 
 const router = express.Router();
@@ -13,7 +15,5 @@ router.route('/')
 router.route('/:kitchenId')
   .patch(patchOrder); // update single order
 
-router.route('/:dishId/count')
-  .get(getDishCreationCount);
 
 module.exports = router;

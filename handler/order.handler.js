@@ -1,26 +1,27 @@
 const Order = require('../models/Order.model');
+const Dish = require('../models/Dish.model');
+const Prediction = require('../models/Prediction.model');
 const { getTodaysDate } = require('../helper/helper');
+const uuidv4 = require('uuid/v4');
 
-exports.getOrder = (req, res) => {
-  const { status } = req.query;
+
+/* eslint-disable */
+
+exports.getOrder = async (req, res) => {
   const { start, end } = getTodaysDate();
-
-  Order.find({
-    status: !!status,
-    date: {
-      $lt: end,
-      $gt: start,
-    },
-
-  }).exec((err, orders) => {
+  kitchenDisplay((err, pendingDishes) => {
     if (err) {
       return res.status(500).send({ message: 'Internal Server Error' });
     }
-    return res.status(200).send(orders);
+    return res.status(200).send(pendingDishes);
   });
+  // });
 };
 exports.postOrder = (req, res) => {
-  const { dishes } = req.body;
+  const dishes = req.body;
+
+  // io = require('../bin/www').io
+
   // To check if there are dishes
   if (!dishes.length) {
     return res.status(400).send({ message: 'Bad Request' });
@@ -37,22 +38,27 @@ exports.postOrder = (req, res) => {
 
   const orderId = `O${new Date().getTime()}`;
   const promises = dishes.map(dish => new Order({
-    kitchenId: `K${new Date().getTime()}`,
+    kitchenId: `K${uuidv4()}`,
     orderId,
-    dishId: dish.dishId,
     quantity: dish.quantity,
+    dishId: dish.dishId,
   }).save());
 
-  return Promise.all(promises).then(data => res.status(201).send({ message: 'Order Placed' })).catch(error => res.status(500).send({ message: 'Internal Server Error' }));
+
+  Promise.all(promises).then(data => {
+    kitchenDisplay((err, data1) => {
+      global.io.sockets.emit("updateDisplay", data1)
+    })
+
+    res.status(201).send({ message: 'Order Placed' })
+  }).catch(error => res.status(500).send({ message: 'Internal Server Error', error }));
 };
 
 exports.patchOrder = (req, res) => {
   const { kitchenId } = req.params;
   const patch = req.body;
-  if (!Object.keys(patch).length) {
-    return res.status(400).send({ message: 'Bad Request' });
-  }
-  return Order.findOneAndUpdate({ kitchenId }, patch, { new: true }).exec((err, document) => {
+  console.log(patch, kitchenId);
+  patchOrder(kitchenId, patch, (err, document) => {
     if (err) {
       return res.status(500).send({ message: 'Internal Server Error' });
     }
@@ -60,28 +66,81 @@ exports.patchOrder = (req, res) => {
   });
 };
 
-exports.getDishCreationCount = (req, res) => {
-  const { dishId } = req.params;
-  const { start, end } = getTodaysDate();
-  // Order.count({ dishId, date: { $lt: end, $gt: start } }).exec((err, count) => {
-  //   if (err) {
-  //     return res.status(500).send({ message: 'Internal Server Error' });
-  //   }
-  //   return res.status(200).send({ message: 'Success', count });
-  // });
-
-
-  Order.aggregate([
-    { $match: { dishId, date: { $lt: end, $gt: start } } },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: '$quantity' },
-      },
-    },
-  ], (err, doc) => {
-    console.log(err, doc);
+function updateOrder(kid, patch, cb) {
+  if (!Object.keys(patch).length) {
+    return cb('Bad Request');
+  }
+  return Order.findOneAndUpdate({ kitchenId: kid }, patch, { new: true }).exec((err, document) => {
+    if (err) {
+      // return res.status(500).send({ message: 'Internal Server Error' });
+      return cb(err);
+    }
+    return cb(null, document);
+    // return res.status(200).send({ message: 'Updated Successfully', document });
   });
-  return res.status(200).send();
+}
+exports.updateOrder = updateOrder
+
+
+const kitchenDisplay = (cb) => {
+  const { start, end } = getTodaysDate();
+  Order.find({
+    date: {
+      $lt: end,
+      $gt: start,
+    },
+  }).lean().exec(async (err, orders) => {
+    if (err) {
+      return cb(err);
+    }
+    const dishIds = orders.map(order => order.dishId);
+    const dishes = await Dish.find({ dishId: { $in: dishIds } }).select('name dishId').lean().exec();
+    const predictions = await Prediction.find({
+      dishId: { $in: dishIds },
+      date: {
+        $lt: end,
+        $gt: start,
+      },
+    }).lean().exec();
+
+    const produced = orders.reduce((inital, order) => {
+      const tmp = Object.assign({}, inital);
+      if (!order.status) return tmp;
+      tmp[order.dishId] = (tmp[order.dishId] || 0) + order.quantity;
+      return tmp;
+    }, {});
+
+    const dishNames = dishes.reduce((inital, dish) => {
+      const tmp = Object.assign({}, inital);
+
+      tmp[dish.dishId] = dish.name;
+      return tmp;
+    }, {});
+
+
+    const predMap = predictions.reduce((inital, pred) => {
+      const tmp = Object.assign({}, inital);
+      tmp[pred.dishId] = pred.quantity;
+      return tmp;
+    }, {});
+
+    const pendingDishes = orders.reduce((initial, order) => {
+      const tmp = [...initial];
+      if (!order.status) {
+        tmp.push({
+          name: dishNames[order.dishId],
+          prepared: produced[order.dishId] || 0,
+          quantity: order.quantity,
+          predicted: predMap[order.dishId] || 0,
+          dishId: order.dishId,
+          kitchenId: order.kitchenId,
+          orderId: order.orderId,
+        });
+      }
+      return tmp;
+    }, []);
+    return cb(null, pendingDishes);
+  });
 };
 
+exports.kitchenDisplay = kitchenDisplay;

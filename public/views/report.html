@@ -1,0 +1,32 @@
+<div class="container margin-top-100">
+    <div class="row">
+        <div class="col-sm-12 margin-bottom-50 ">
+            <h2>Daily Report</h2>
+        </div>
+        <div class="col-sm-12 ">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Produced</th>
+                        <th scope="col">Predicted</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="rep in report">
+                        <th scope="row">{{rep.name}}</th>
+                        <td>{{rep.produced}}</td>
+                        <td>{{rep.predicted}}</td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </div>
+        <div class="col-sm-12 margin-bottom-100">
+            <button class="btn btn-dark" ng-click="createReport()">Download Report</button>
+        </div>
+    </div>
+</div>

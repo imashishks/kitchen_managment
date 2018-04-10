@@ -1,0 +1,41 @@
+<div class="container margin-top-100">
+    <div class="row">
+        <div class="col-sm-12 margin-bottom-50">
+            <h2>Make the predictions for the day !</h2>
+        </div>
+        <div class="col-sm-12 prediction-container">
+            <table class="table">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Dish Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Value</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr ng-repeat="dish in dishes">
+                        <td>
+                            <img class="small-img" src="{{dish.imgUrl}}" />
+                        </td>
+                        <th scope="row">{{dish.dishId}}</th>
+                        <td>{{dish.name}}</td>
+                        <td>
+                            <input ng-model="dish.prediction" value="{{dish.prediction}}" ng-value="dish.prediction" min="0" class="dish-input" type="number"
+                            />
+
+                        </td>
+                        <td>
+                            <button ng-click="addPrediction(dish, this)" class="btn btn-dark">SUBMIT</button>
+                        </td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

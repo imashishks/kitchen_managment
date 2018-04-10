@@ -1,5 +1,6 @@
 const Dish = require('../models/Dish.model');
 
+
 exports.getDishes = (req, res) => {
   const { dishId } = req.query;
   if (dishId) {
@@ -13,6 +14,7 @@ exports.getDishes = (req, res) => {
     return res.status(201).send(document);
   });
 };
+
 exports.postDishes = (req, res) => {
   const { dish } = req.body;
   return new Dish(dish).save((err, document) => {

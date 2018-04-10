@@ -1,0 +1,18 @@
+<div class="container margin-top-100">
+    <div class="row">
+        <div class="col-sm-12 ">
+            <h2>Choose your orders !</h2>
+        </div>
+        <div class="col-sm-12 dish-container">
+            <div class="dish-card" ng-repeat="dish in dishes">
+                <div class="dish-img" style="background-image:url({{dish.imgUrl}})"></div>
+                <div class="dish-details">
+                    <p class=" full-width text-ellipsis">{{dish.name}}</p>
+                    <input ng-model="count" min="0" class="dish-input" type="number" ng-change="addDish(dish, this)" />
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

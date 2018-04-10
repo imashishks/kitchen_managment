@@ -24,12 +24,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/api/users', usersRouter);
+app.use('/api/dishes', dishesRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/prediction', predictionsRouter);
+app.use('/api/report', reportRouter);
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/dishes', dishesRouter);
-app.use('/orders', ordersRouter);
-app.use('/predictions', predictionsRouter);
-app.use('/report', reportRouter);
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

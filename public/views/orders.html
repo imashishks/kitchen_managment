@@ -1,0 +1,42 @@
+<div class="container margin-top-100">
+
+    <div class="row">
+        <div class="col-sm-12 ">
+            <h2>Todays Orders</h2>
+        </div>
+        <div class="col-sm-12 order-container">
+
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Dish Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Created till now</th>
+                        <th scope="col">Predicted</th>
+                        <th scope="col">Staus</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr ng-repeat="order in orders">
+                        <td>
+                            <img class="small-img" src='{{order.dish.imgUrl}}' />
+                        </td>
+                        <th scope="row">{{order.dishId}}</th>
+                        <td scope="row">{{order.name}}</td>
+                        <td>{{order.quantity}}</td>
+                        <td>{{order.prepared}}</td>
+                        <td>{{order.predicted}}</td>
+                        <td>
+                            <button class="btn btn-dark" ng-click="changeStatus(order.kitchenId)">DONE</button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

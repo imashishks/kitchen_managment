@@ -12,5 +12,6 @@ const predictionSchema = new mongoose.Schema({
     ref: 'Dish',
   },
 });
+predictionSchema.index({ date: -1 });
 
 module.exports = mongoose.model('Prediction', predictionSchema);
